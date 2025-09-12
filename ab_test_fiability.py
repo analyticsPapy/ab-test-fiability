@@ -432,6 +432,6 @@ st.markdown(
     - **Puissance post hoc** : approximation normale sous l'effet observé (indicatif, ne remplace pas un plan a priori).
     - **Taille d'échantillon** : formules classiques (approx. normale). Pour des taux extrêmes ou de petits n, privilégiez Wilson/Newcombe, tests exacts ou des simulations.
     - **Bonnes pratiques** : durée d'expo suffisante, randomisation, absence de contamination, contrôles de saisonnalité et de multiples comparaisons.
-    """^
+    """
 )
 st.caption("Développé par un data scientist. Code source : Léo Combe")
