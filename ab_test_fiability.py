@@ -8,7 +8,7 @@
 # - Pour un **taux de conversion** (succès/échec) : test Z sur la différence de proportions
 # - Pour une **métrique continue** (ex: panier moyen) : test t de Welch
 # Elle affiche : p-valeur, intervalle de confiance, lift, puissance post hoc, et taille d'échantillon.
-# Le front inclut désormais des guides de lecture et des messages d'aide pour un public non-statisticien.
+# Le front inclut des guides de lecture et des messages d'aide pour un public non-statisticien.
 
 import math
 import numpy as np
@@ -21,38 +21,38 @@ import streamlit as st
 # -------------------------------------------------------------
 st.set_page_config(page_title="Calculateur A/B test", page_icon="📊", layout="centered")
 
-# Petit thème visuel simple lisible
+# Petit thème visuel simple lisible (auto-adapté au dark/light mode Streamlit)
 st.markdown(
     """
     <style>
-/* Améliore la lisibilité générale */
-.block-container {max-width: 920px;}
+    /* Améliore la lisibilité générale */
+    .block-container {max-width: 920px;}
 
-/* KPI : suivent automatiquement le thème clair/sombre */
-.stMetric {
-  background: var(--background-color-secondary);
-  color: var(--text-color);
-}
+    /* KPI : suivent automatiquement le thème clair/sombre */
+    .stMetric {
+      background: var(--background-color-secondary);
+      color: var(--text-color);
+    }
 
-/* Badges adaptatifs (thème clair/sombre) */
-.help-badge, .warn-badge, .ok-badge {
-  display:inline-block; padding:2px 8px; border-radius:8px; font-size:12px;
-  background: var(--background-color-secondary);
-  color: var(--text-color);
-}
+    /* Badges adaptatifs (thème clair/sombre) */
+    .help-badge, .warn-badge, .ok-badge {
+      display:inline-block; padding:2px 8px; border-radius:8px; font-size:12px;
+      background: var(--background-color-secondary);
+      color: var(--text-color);
+    }
 
-/* Couleurs personnalisées pour résultats significatifs / non significatifs */
-.result-significant {
-  display:inline-block; padding:4px 10px; border-radius:10px; font-weight:bold;
-  background: #dcfce7;   /* vert clair */
-  color: #166534;        /* texte vert foncé */
-}
-.result-nonsignificant {
-  display:inline-block; padding:4px 10px; border-radius:10px; font-weight:bold;
-  background: #fee2e2;   /* rouge clair */
-  color: #991b1b;        /* texte rouge foncé */
-}
-</style>
+    /* Couleurs personnalisées pour résultats significatifs / non significatifs */
+    .result-significant {
+      display:inline-block; padding:4px 10px; border-radius:10px; font-weight:bold;
+      background: #dcfce7;   /* vert clair */
+      color: #166534;        /* texte vert foncé */
+    }
+    .result-nonsignificant {
+      display:inline-block; padding:4px 10px; border-radius:10px; font-weight:bold;
+      background: #fee2e2;   /* rouge clair */
+      color: #991b1b;        /* texte rouge foncé */
+    }
+    </style>
     """,
     unsafe_allow_html=True,
 )
@@ -212,13 +212,26 @@ def sample_size_means(sd_pooled: float, mde_abs: float, alpha: float = 0.05, bet
 
 st.title("📊 Calculateur de fiabilité d'un A/B test")
 
-# Bandeau d'aide rapide pour non-statisticien
-with st.expander("🧭 Guide de lecture rapide (recommandé)", expanded=True):
+# 🧭 Aide à choisir Binomiale vs Moyenne continue (accueil)
+with st.expander("🤔 Quand choisir *Binomiale* vs *Moyenne continue* ?", expanded=True):
     st.markdown(
         """
-        - **p-valeur** : probabilité d'observer un écart au moins aussi grand **si** A et B étaient en réalité identiques. Si p < α, on dit que la différence est **significative**.
+        - **Binomiale (taux de conversion)** → votre métrique vaut **0/1** (ex. : a converti / n'a pas converti).
+          *Exemples* : inscription, achat, clic, ajout au panier.
+        - **Moyenne continue (Welch)** → votre métrique est **numérique continue** (ex. : panier moyen, revenu, pages vues, durée).
+          *Exemples* : panier moyen (€), nombre de pages, temps passé (s/min).
+
+        👉 Règle simple : si vous comptez des **succès** sur un **nombre d'essais**, c'est *binomiale* ; sinon, si c'est une **valeur mesurée**, c'est *moyenne continue*.
+        """
+    )
+
+# Bandeau d'aide rapide pour non-statisticien
+with st.expander("🧭 Guide de lecture rapide (recommandé)", expanded=False):
+    st.markdown(
+        """
+        - **p-valeur** : probabilité d'observer un écart au moins aussi grand **si** A et B étaient en réalité identiques. Si p < α, la différence est **significative**.
         - **IC (intervalle de confiance)** : fourchette plausible de la vraie différence. S'il contient 0, l'effet peut être nul.
-        - **Lift** : amélioration relative de B vs A (utile en business pour lire l'impact en %).
+        - **Lift** : amélioration relative de B vs A (utile pour lire l'impact en %).
         - **Puissance** *(indicatif)* : capacité du test à détecter l'effet observé. <span class="warn-badge">Faible</span> si < 0.8.
         - **Taille d'échantillon** : combien de visiteurs/observations **par variante** viser pour un MDE donné.
         """,
@@ -240,7 +253,7 @@ with st.sidebar:
     alternative = alt_choice[0]
     metric_type = st.radio("Type de métrique", ["Taux de conversion (binomiale)", "Moyenne continue"], index=0)
 
-st.markdown("### 1) Saisie des données")
+st.markdown("### 1) Renseigner les données de l'A/B test")
 
 # -------------------------------------------------------------
 # BRANCHE BINOMIALE (taux de conversion)
@@ -269,7 +282,7 @@ if metric_type == "Taux de conversion (binomiale)":
     if low_counts or extreme_rates:
         st.warning("Les effectifs/ratios sont extrêmes (très peu de conversions ou ~0%/~100%). Les IC/Wald peuvent être fragiles. Envisagez Wilson/Newcombe ou un test exact.")
 
-    st.markdown("### 2) Résultats — binomiale")
+    st.markdown("### 2) Que disent les résultats ? — taux de conversion (binomiale)")
 
     # Tuiles KPI synthétiques (plus lisibles pour non-experts)
     kpi1, kpi2, kpi3 = st.columns(3)
@@ -303,18 +316,42 @@ if metric_type == "Taux de conversion (binomiale)":
         )
 
     st.divider()
-    st.markdown("### 3) Puissance post hoc (≈)")
+    st.markdown("### 3) Le test était-il assez puissant ? (post hoc) (≈)")
     power = posthoc_power_proportions(p_a, p_b, n_a, n_b, alpha=alpha, alternative=alternative)
 
-    # Affiche un badge de lisibilité sur la puissance
-    if not np.isnan(power) and power < 0.8:
-        st.markdown("<span class='warn-badge'>Puissance faible (&lt; 0.8) : risque d\'**erreur de type II** (faux négatif) élevé.</span>", unsafe_allow_html=True)
-    elif not np.isnan(power):
-        st.markdown("<span class='ok-badge'>Puissance correcte (≥ 0.8)</span>", unsafe_allow_html=True)
-    st.write(f"**Puissance** ≈ {power:.3f}")
+    if not np.isnan(power):
+        if power >= 0.8:  # seuil classique de 80 %
+            st.markdown(
+                f"<span class='result-significant'>Puissance ≈ {power:.3f} (OK, suffisante)</span>",
+                unsafe_allow_html=True,
+            )
+        else:
+            st.markdown(
+                f"<span class='result-nonsignificant'>Puissance ≈ {power:.3f} (insuffisante)</span>",
+                unsafe_allow_html=True,
+            )
+    else:
+        st.write("Puissance non calculable (données insuffisantes)")
+
+    with st.expander("ℹ️ Aide à la lecture de la puissance post hoc", expanded=False):
+        st.markdown(
+            """
+            - La **puissance** est la probabilité de détecter un effet réel (**1−β**).
+            - On vise souvent **≥ 80 %** pour considérer un test suffisamment armé.
+            - Ici, il s'agit d'une **puissance post hoc** : calculée *après coup* à partir de l'effet **observé** et des **volumes saisis**.
+              Si elle est faible (< 80 %), l'effet est peut‑être trop petit ou l'échantillon trop réduit.
+            - Cette valeur est **approximative** (approx. normale) : prudence si les échantillons sont petits ou si les taux sont très proches de 0 % / 100 %.
+            """
+        )
 
     st.divider()
-    st.markdown("### 4) Taille d'échantillon (a priori)")
+
+    st.markdown("### 4) Combien de données faut-il pour la prochaine fois ?")
+    st.info(
+            "💡 **Aide à la lecture (binomiale)** : Ici on estime le nombre minimal "
+            "le volume **par échantillons** nécessaire pour détecter un MDE donné. "
+            "Si ton volume réel est plus petit, tu risques un **faux négatif**. "
+    )
     col3, col4 = st.columns(2)
     with col3:
         p0 = st.number_input("Taux baseline attendu p₀", min_value=0.0, max_value=1.0, value=float(p_a if not np.isnan(p_a) else 0.1), step=0.001, format="%.3f")
@@ -325,6 +362,10 @@ if metric_type == "Taux de conversion (binomiale)":
     n_per_group = sample_size_proportions(p0, mde_rel, alpha=alpha, beta=beta_target, alternative=alternative)
     st.write(f"**n par variante (≈)** : {n_per_group:,}")
 
+    st.info(
+    f"Avec p₀ = {p0:.2%} et MDE = {mde_rel:.1%}, viser ≈ **{n_per_group:,}** obs/variante "
+    f"pour α = {alpha:.2f} et puissance ≈ {1 - beta_target:.0%}."
+    )
     # Export CSV récap
     df = pd.DataFrame({
         "metrique": ["binomiale"],
@@ -355,7 +396,7 @@ else:
     res = welch_test_and_ci(mean_a, sd_a, n_a, mean_b, sd_b, n_b, alpha=alpha, alternative=alternative)
     diff, ci, t_stat, p_value, df = res["diff"], res["ci"], res["t"], res["p_value"], res["df"]
 
-    st.markdown("### 2) Résultats — moyenne continue (Welch)")
+    st.markdown("### 2) Que disent les résultats ? — moyenne continue (Welch)")
 
     # Tuiles KPI
     k1, k2, k3 = st.columns(3)
@@ -386,16 +427,43 @@ else:
         )
 
     st.divider()
-    st.markdown("### 3) Puissance post hoc (≈) définition en bas de page")
+    st.markdown("### 3) Le test était-il assez puissant ? (post hoc) (≈)")
     power = posthoc_power_means(mean_a, sd_a, n_a, mean_b, sd_b, n_b, alpha=alpha, alternative=alternative)
-    if not np.isnan(power) and power < 0.8:
-        st.markdown("<span class='warn-badge'>Puissance faible (&lt; 0.8) : risque de **faux négatif** élevé.</span>", unsafe_allow_html=True)
-    elif not np.isnan(power):
-        st.markdown("<span class='ok-badge'>Puissance correcte (≥ 0.8)</span>", unsafe_allow_html=True)
-    st.write(f"**Puissance** ≈ {power:.3f}")
+
+    # 🔴🟢 Badge rouge/vert selon la puissance
+    if not np.isnan(power):
+        if power >= 0.8:  # seuil classique de 80 %
+            st.markdown(
+                f"<span class='result-significant'>Puissance ≈ {power:.3f} (OK, suffisante)</span>",
+                unsafe_allow_html=True,
+            )
+        else:
+            st.markdown(
+                f"<span class='result-nonsignificant'>Puissance ≈ {power:.3f} (insuffisante)</span>",
+                unsafe_allow_html=True,
+            )
+    else:
+        st.write("Puissance non calculable (données insuffisantes)")
+
+    with st.expander("ℹ️ Aide à la lecture de la puissance post hoc", expanded=False):
+        st.markdown(
+            """
+            - La **puissance** est la probabilité de détecter un effet réel (**1−β**).
+            - Cible habituelle : **≥ 80 %**.
+            - Ici on calcule une **puissance post hoc** basée sur l'effet **observé** (différence de moyennes)
+              et les **volumes saisis**. Si elle est faible (< 80 %), soit l'effet est trop petit, soit il faut plus d'observations.
+            - Valeur **indicative** (approx. normale), moins fiable si n est petit ou si les distributions s'éloignent des hypothèses.
+            """
+        )
 
     st.divider()
-    st.markdown("### 4) Taille d'échantillon (a priori)")
+    st.markdown("### 4) Combien de données faut-il pour la prochaine fois ?)")
+    st.info(
+        "💡 **Aide à la lecture (moyenne continue)** : Volume d’utilisateurs requis par groupe pour "
+        "que le test ait de bonnes chances de repérer une différence au moins aussi grande que celle que vous jugez importante (MDE absolu).  "
+        "Si le volume réel est insuffisant, le test peut manquer une vraie différence "
+        "(**faux négatif**)."
+    )
     col3, col4 = st.columns(2)
     with col3:
         sd_pooled = st.number_input("Écart-type *pooled* attendu", min_value=0.0001, value=float(np.sqrt((sd_a**2 + sd_b**2)/2)), step=0.1, format="%.4f")
@@ -405,7 +473,10 @@ else:
 
     n_per_group = sample_size_means(sd_pooled, mde_abs, alpha=alpha, beta=beta_target, alternative=alternative)
     st.write(f"**n par variante (≈)** : {n_per_group:,}")
-
+    st.info(
+        f"Avec p₀ = {sd_pooled:.2%} et MDE = {mde_abs:.1%}, viser ≈ **{n_per_group:,}** obs/variante "
+        f"pour α = {alpha:.2f} et puissance ≈ {1 - beta_target:.0%}."
+    )
     # Export CSV
     df = pd.DataFrame({
         "metrique": ["continue"],
@@ -432,22 +503,7 @@ st.markdown(
     - **Puissance post hoc** : approximation normale sous l'effet observé (indicatif, ne remplace pas un plan a priori).
     - **Taille d'échantillon** : formules classiques (approx. normale). Pour des taux extrêmes ou de petits n, privilégiez Wilson/Newcombe, tests exacts ou des simulations.
     - **Bonnes pratiques** : durée d'expo suffisante, randomisation, absence de contamination, contrôles de saisonnalité et de multiples comparaisons.
-    
-    La **puissance d’un test** correspond à la probabilité de détecter un effet
-        **quand il existe vraiment** (c’est-à-dire éviter les faux négatifs).
-
-    - Elle se note **1−β** (β = risque de rater un effet réel).
-    - Plus la puissance est élevée (ex: 80 %), plus ton test a de chances de
-      trouver une vraie différence.
-    La **puissance post hoc** est calculée *après coup*, en utilisant les
-     effectifs et les résultats observés.  
-    👉 Elle répond à la question :
-    *“Si l’effet observé était la vraie différence, quelle est la probabilité
-    que notre test le détecte ?”*
-
-    ⚠️ Cette estimation repose sur une **approximation normale** : elle est
-    indicative mais pas parfaite, surtout si les échantillons sont petits
-    ou les taux très extrêmes.
     """
 )
-st.caption("Développé par un data scientist. Code source : Léo Combe")
+
+st.caption("Développé par un data analyst. Code source : Léo Combe")
