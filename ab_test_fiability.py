@@ -386,7 +386,7 @@ else:
         )
 
     st.divider()
-    st.markdown("### 3) Puissance post hoc (≈)")
+    st.markdown("### 3) Puissance post hoc (≈) définition en bas de page")
     power = posthoc_power_means(mean_a, sd_a, n_a, mean_b, sd_b, n_b, alpha=alpha, alternative=alternative)
     if not np.isnan(power) and power < 0.8:
         st.markdown("<span class='warn-badge'>Puissance faible (&lt; 0.8) : risque de **faux négatif** élevé.</span>", unsafe_allow_html=True)
@@ -432,6 +432,22 @@ st.markdown(
     - **Puissance post hoc** : approximation normale sous l'effet observé (indicatif, ne remplace pas un plan a priori).
     - **Taille d'échantillon** : formules classiques (approx. normale). Pour des taux extrêmes ou de petits n, privilégiez Wilson/Newcombe, tests exacts ou des simulations.
     - **Bonnes pratiques** : durée d'expo suffisante, randomisation, absence de contamination, contrôles de saisonnalité et de multiples comparaisons.
+    
+    La **puissance d’un test** correspond à la probabilité de détecter un effet
+        **quand il existe vraiment** (c’est-à-dire éviter les faux négatifs).
+
+    - Elle se note **1−β** (β = risque de rater un effet réel).
+    - Plus la puissance est élevée (ex: 80 %), plus ton test a de chances de
+      trouver une vraie différence.
+    La **puissance post hoc** est calculée *après coup*, en utilisant les
+     effectifs et les résultats observés.  
+    👉 Elle répond à la question :
+    *“Si l’effet observé était la vraie différence, quelle est la probabilité
+    que notre test le détecte ?”*
+
+    ⚠️ Cette estimation repose sur une **approximation normale** : elle est
+    indicative mais pas parfaite, surtout si les échantillons sont petits
+    ou les taux très extrêmes.
     """
 )
 st.caption("Développé par un data scientist. Code source : Léo Combe")
