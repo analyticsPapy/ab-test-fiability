@@ -1,0 +1,38 @@
+
+— Python —
+
+pycache/
+*.py[cod]
+*$py.class
+
+— Virtual env —
+
+.venv/
+venv/
+ENV/
+
+— Jupyter —
+
+.ipynb_checkpoints
+*.ipynb
+
+— VS Code —
+
+.vscode/
+*.code-workspace
+
+— OS files —
+
+.DS_Store
+Thumbs.db
+
+— Logs & cache —
+
+*.log
+*.out
+*.err
+.cache/
+
+— Streamlit cache —
+
+.streamlit/
