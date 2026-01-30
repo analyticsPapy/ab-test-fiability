@@ -530,6 +530,202 @@
             transform: translate(-50%, -50%);
         }
 
+        /* Tabs */
+        .tabs-container {
+            display: flex;
+            gap: 4px;
+            background: var(--gray-100);
+            padding: 4px;
+            border-radius: 12px;
+            margin-bottom: 24px;
+        }
+
+        .tab-btn {
+            flex: 1;
+            padding: 12px 20px;
+            background: transparent;
+            border: none;
+            border-radius: 10px;
+            font-size: 14px;
+            font-weight: 500;
+            color: var(--gray-600);
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .tab-btn:hover {
+            color: var(--gray-800);
+            background: rgba(255,255,255,0.5);
+        }
+
+        .tab-btn.active {
+            background: white;
+            color: var(--primary-dark);
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+
+        .tab-btn svg {
+            width: 18px;
+            height: 18px;
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        /* Simulateur */
+        .simulator-card {
+            background: white;
+            border-radius: 12px;
+            padding: 24px;
+            margin-bottom: 24px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+
+        .simulator-title {
+            font-size: 18px;
+            font-weight: 600;
+            color: var(--gray-800);
+            margin-bottom: 8px;
+        }
+
+        .simulator-desc {
+            font-size: 14px;
+            color: var(--gray-500);
+            margin-bottom: 20px;
+        }
+
+        .simulator-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 16px;
+            margin-bottom: 24px;
+        }
+
+        .simulator-input-group {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .simulator-input-group label {
+            font-size: 13px;
+            font-weight: 500;
+            color: var(--gray-600);
+            margin-bottom: 6px;
+        }
+
+        .simulator-input-group input,
+        .simulator-input-group select {
+            padding: 10px 12px;
+            border: 1px solid var(--gray-300);
+            border-radius: 8px;
+            font-size: 15px;
+        }
+
+        .simulator-input-group input:focus,
+        .simulator-input-group select:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(34, 197, 94, 0.15);
+        }
+
+        .simulator-result {
+            background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%);
+            border-radius: 12px;
+            padding: 24px;
+            text-align: center;
+        }
+
+        .simulator-result-label {
+            font-size: 14px;
+            color: var(--gray-600);
+            margin-bottom: 8px;
+        }
+
+        .simulator-result-value {
+            font-size: 48px;
+            font-weight: 700;
+            color: var(--primary-dark);
+            margin-bottom: 8px;
+        }
+
+        .simulator-result-sublabel {
+            font-size: 13px;
+            color: var(--gray-500);
+        }
+
+        .simulator-details {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 16px;
+            margin-top: 20px;
+        }
+
+        .simulator-detail {
+            text-align: center;
+            padding: 16px;
+            background: white;
+            border-radius: 8px;
+        }
+
+        .simulator-detail-value {
+            font-size: 20px;
+            font-weight: 600;
+            color: var(--gray-800);
+        }
+
+        .simulator-detail-label {
+            font-size: 12px;
+            color: var(--gray-500);
+            margin-top: 4px;
+        }
+
+        .simulator-timeline {
+            background: white;
+            border-radius: 12px;
+            padding: 24px;
+            margin-top: 24px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+
+        .timeline-bar {
+            display: flex;
+            height: 40px;
+            background: var(--gray-100);
+            border-radius: 8px;
+            overflow: hidden;
+            margin: 16px 0;
+        }
+
+        .timeline-segment {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 12px;
+            font-weight: 500;
+            transition: width 0.5s ease;
+        }
+
+        .timeline-segment.week {
+            background: linear-gradient(90deg, var(--primary-light) 0%, var(--primary) 100%);
+        }
+
+        .timeline-labels {
+            display: flex;
+            justify-content: space-between;
+            font-size: 11px;
+            color: var(--gray-500);
+        }
+
         /* Responsive */
         @media (max-width: 1024px) {
             .container {
@@ -558,6 +754,18 @@
             .rate-bars {
                 margin-left: 0;
                 width: 100%;
+            }
+
+            .tabs-container {
+                flex-direction: column;
+            }
+
+            .simulator-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .simulator-details {
+                grid-template-columns: 1fr;
             }
         }
     </style>
@@ -766,6 +974,25 @@
                 <button class="share-btn" onclick="shareResults()">Sauvegarder & partager</button>
             </div>
 
+            <!-- Tabs -->
+            <div class="tabs-container">
+                <button class="tab-btn active" onclick="switchTab('analyse')" id="tab-btn-analyse">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/>
+                    </svg>
+                    Analyse des résultats
+                </button>
+                <button class="tab-btn" onclick="switchTab('simulator')" id="tab-btn-simulator">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z"/>
+                    </svg>
+                    Simulateur de volume
+                </button>
+            </div>
+
+            <!-- Tab: Analyse des résultats -->
+            <div class="tab-content active" id="tab-analyse">
+
             <!-- Result banner -->
             <div class="result-banner not-significant" id="result-banner">
                 <div class="result-banner-content">
@@ -922,6 +1149,108 @@
                     </div>
                 </div>
             </div>
+
+            </div><!-- End tab-analyse -->
+
+            <!-- Tab: Simulateur de volume -->
+            <div class="tab-content" id="tab-simulator">
+                <div class="simulator-card">
+                    <h2 class="simulator-title">Calculateur de taille d'échantillon</h2>
+                    <p class="simulator-desc">Estimez le nombre de visiteurs nécessaires pour atteindre la significativité statistique de votre test A/B.</p>
+
+                    <div class="simulator-grid">
+                        <div class="simulator-input-group">
+                            <label for="sim-baseline">Taux de conversion actuel (%)</label>
+                            <input type="number" id="sim-baseline" value="2" min="0.01" max="100" step="0.1" oninput="calculateSampleSize()">
+                        </div>
+                        <div class="simulator-input-group">
+                            <label for="sim-mde">Uplift minimum détectable (%)</label>
+                            <input type="number" id="sim-mde" value="10" min="1" max="100" step="1" oninput="calculateSampleSize()">
+                        </div>
+                        <div class="simulator-input-group">
+                            <label for="sim-confidence">Niveau de confiance</label>
+                            <select id="sim-confidence" onchange="calculateSampleSize()">
+                                <option value="0.90">90%</option>
+                                <option value="0.95" selected>95%</option>
+                                <option value="0.99">99%</option>
+                            </select>
+                        </div>
+                        <div class="simulator-input-group">
+                            <label for="sim-power">Puissance souhaitée</label>
+                            <select id="sim-power" onchange="calculateSampleSize()">
+                                <option value="0.70">70%</option>
+                                <option value="0.80" selected>80%</option>
+                                <option value="0.90">90%</option>
+                                <option value="0.95">95%</option>
+                            </select>
+                        </div>
+                        <div class="simulator-input-group">
+                            <label for="sim-variants">Nombre de variantes</label>
+                            <select id="sim-variants" onchange="calculateSampleSize()">
+                                <option value="2" selected>2 (A/B)</option>
+                                <option value="3">3 (A/B/C)</option>
+                                <option value="4">4 (A/B/C/D)</option>
+                            </select>
+                        </div>
+                        <div class="simulator-input-group">
+                            <label for="sim-daily-traffic">Trafic quotidien estimé</label>
+                            <input type="number" id="sim-daily-traffic" value="5000" min="100" step="100" oninput="calculateSampleSize()">
+                        </div>
+                    </div>
+
+                    <div class="simulator-result">
+                        <div class="simulator-result-label">Visiteurs nécessaires par variante</div>
+                        <div class="simulator-result-value" id="sim-sample-size">15 700</div>
+                        <div class="simulator-result-sublabel">Total : <span id="sim-total-sample">31 400</span> visiteurs</div>
+
+                        <div class="simulator-details">
+                            <div class="simulator-detail">
+                                <div class="simulator-detail-value" id="sim-duration">7</div>
+                                <div class="simulator-detail-label">Jours estimés</div>
+                            </div>
+                            <div class="simulator-detail">
+                                <div class="simulator-detail-value" id="sim-target-rate">2.20%</div>
+                                <div class="simulator-detail-label">Taux cible (B)</div>
+                            </div>
+                            <div class="simulator-detail">
+                                <div class="simulator-detail-value" id="sim-absolute-diff">+0.20 pts</div>
+                                <div class="simulator-detail-label">Différence absolue</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="simulator-timeline">
+                    <h3 class="chart-title">Planning du test</h3>
+                    <div class="timeline-bar" id="timeline-bar">
+                        <!-- Les segments de semaine sont ajoutés dynamiquement -->
+                    </div>
+                    <div class="timeline-labels">
+                        <span>Début</span>
+                        <span id="timeline-end">Fin estimée : 7 jours</span>
+                    </div>
+
+                    <div style="margin-top: 20px; padding: 16px; background: var(--gray-50); border-radius: 8px;">
+                        <h4 style="font-size: 14px; color: var(--gray-700); margin-bottom: 12px;">Recommandations</h4>
+                        <ul style="font-size: 13px; color: var(--gray-600); line-height: 1.8; margin: 0; padding-left: 20px;" id="sim-recommendations">
+                            <li>Visez au moins 2 semaines complètes pour capturer les variations hebdomadaires</li>
+                            <li>Évitez de lancer le test pendant des périodes exceptionnelles (soldes, fêtes)</li>
+                            <li>Assurez-vous que le trafic quotidien est stable avant de commencer</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="simulator-card" style="margin-top: 24px;">
+                    <h3 class="chart-title">Comment interpréter ces résultats ?</h3>
+                    <div style="font-size: 14px; color: var(--gray-600); line-height: 1.7;">
+                        <p><strong>Taille d'échantillon :</strong> C'est le nombre minimum de visiteurs par variante pour détecter l'effet souhaité avec la puissance et la confiance spécifiées.</p>
+                        <p style="margin-top: 12px;"><strong>Uplift minimum détectable (MDE) :</strong> C'est la plus petite amélioration que vous souhaitez pouvoir détecter. Un MDE plus petit nécessite plus de visiteurs.</p>
+                        <p style="margin-top: 12px;"><strong>Puissance (1-β) :</strong> Probabilité de détecter un vrai effet s'il existe. 80% est le standard de l'industrie.</p>
+                        <p style="margin-top: 12px;"><strong>Confiance (1-α) :</strong> Probabilité de ne pas déclarer un effet qui n'existe pas. 95% est le standard.</p>
+                    </div>
+                </div>
+            </div><!-- End tab-simulator -->
+
         </main>
     </div>
 
@@ -1750,10 +2079,142 @@
             }
         }
 
+        // Tab switching
+        function switchTab(tabId) {
+            // Update buttons
+            document.querySelectorAll('.tab-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            document.getElementById('tab-btn-' + tabId).classList.add('active');
+
+            // Update content
+            document.querySelectorAll('.tab-content').forEach(content => {
+                content.classList.remove('active');
+            });
+            document.getElementById('tab-' + tabId).classList.add('active');
+
+            // If switching to simulator, calculate sample size
+            if (tabId === 'simulator') {
+                calculateSampleSize();
+            }
+        }
+
+        // Sample size calculation
+        function calculateSampleSize() {
+            const baseline = parseFloat(document.getElementById('sim-baseline').value) / 100 || 0.02;
+            const mde = parseFloat(document.getElementById('sim-mde').value) / 100 || 0.1;
+            const confidence = parseFloat(document.getElementById('sim-confidence').value) || 0.95;
+            const power = parseFloat(document.getElementById('sim-power').value) || 0.8;
+            const variants = parseInt(document.getElementById('sim-variants').value) || 2;
+            const dailyTraffic = parseInt(document.getElementById('sim-daily-traffic').value) || 5000;
+
+            const alpha = 1 - confidence;
+            const beta = 1 - power;
+
+            // Target rate based on MDE (relative uplift)
+            const targetRate = baseline * (1 + mde);
+            const absoluteDiff = targetRate - baseline;
+
+            // Z-scores
+            const zAlpha = normalPPF(1 - alpha / 2); // Two-sided test
+            const zBeta = normalPPF(1 - beta);
+
+            // Pooled variance estimation
+            const pooledP = (baseline + targetRate) / 2;
+            const pooledVar = 2 * pooledP * (1 - pooledP);
+
+            // Sample size per variant (formula for two-proportion test)
+            const effectSize = Math.abs(targetRate - baseline);
+            const varianceSum = baseline * (1 - baseline) + targetRate * (1 - targetRate);
+
+            let sampleSize = Math.pow(zAlpha + zBeta, 2) * varianceSum / Math.pow(effectSize, 2);
+
+            // Adjust for multiple comparisons if more than 2 variants
+            if (variants > 2) {
+                const bonferroniAlpha = alpha / (variants - 1);
+                const zAlphaAdj = normalPPF(1 - bonferroniAlpha / 2);
+                sampleSize = Math.pow(zAlphaAdj + zBeta, 2) * varianceSum / Math.pow(effectSize, 2);
+            }
+
+            sampleSize = Math.ceil(sampleSize);
+            const totalSample = sampleSize * variants;
+
+            // Duration calculation
+            const trafficPerVariant = dailyTraffic / variants;
+            const durationDays = Math.ceil(sampleSize / trafficPerVariant);
+
+            // Update UI
+            document.getElementById('sim-sample-size').textContent = sampleSize.toLocaleString('fr-FR');
+            document.getElementById('sim-total-sample').textContent = totalSample.toLocaleString('fr-FR');
+            document.getElementById('sim-duration').textContent = durationDays;
+            document.getElementById('sim-target-rate').textContent = (targetRate * 100).toFixed(2) + '%';
+            document.getElementById('sim-absolute-diff').textContent = (absoluteDiff >= 0 ? '+' : '') + (absoluteDiff * 100).toFixed(2) + ' pts';
+            document.getElementById('timeline-end').textContent = 'Fin estimée : ' + durationDays + ' jours';
+
+            // Update timeline visualization
+            updateTimelineBar(durationDays);
+
+            // Update recommendations
+            updateSimulatorRecommendations(durationDays, sampleSize, dailyTraffic, variants, mde);
+        }
+
+        function updateTimelineBar(days) {
+            const weeks = Math.ceil(days / 7);
+            const timelineBar = document.getElementById('timeline-bar');
+            timelineBar.innerHTML = '';
+
+            // Create week segments
+            const colors = [
+                'linear-gradient(90deg, #4ade80 0%, #22c55e 100%)',
+                'linear-gradient(90deg, #22c55e 0%, #16a34a 100%)',
+                'linear-gradient(90deg, #16a34a 0%, #15803d 100%)',
+                'linear-gradient(90deg, #15803d 0%, #166534 100%)'
+            ];
+
+            for (let i = 0; i < weeks; i++) {
+                const segment = document.createElement('div');
+                segment.className = 'timeline-segment';
+                segment.style.background = colors[i % colors.length];
+                const segmentDays = (i === weeks - 1) ? (days - i * 7) : 7;
+                segment.style.width = (segmentDays / days * 100) + '%';
+                segment.textContent = 'S' + (i + 1);
+                timelineBar.appendChild(segment);
+            }
+        }
+
+        function updateSimulatorRecommendations(days, sampleSize, dailyTraffic, variants, mde) {
+            const recommendations = [];
+
+            if (days < 7) {
+                recommendations.push('<li style="color: var(--warning);">La durée est inférieure à 1 semaine. Vous ne capturerez pas les variations jour/nuit et semaine/week-end.</li>');
+            } else if (days < 14) {
+                recommendations.push('<li>Considérez prolonger à 2 semaines pour capturer 2 cycles hebdomadaires complets.</li>');
+            } else {
+                recommendations.push('<li style="color: var(--success);">La durée de ' + days + ' jours couvre plusieurs cycles hebdomadaires.</li>');
+            }
+
+            if (mde < 0.05) {
+                recommendations.push('<li style="color: var(--warning);">Un MDE de ' + (mde * 100).toFixed(0) + '% est très ambitieux et nécessite un échantillon très large.</li>');
+            }
+
+            if (sampleSize > dailyTraffic * 30) {
+                recommendations.push('<li style="color: var(--danger);">Attention : le test nécessite plus d\'un mois. Considérez augmenter le MDE ou réduire la puissance.</li>');
+            }
+
+            if (variants > 2) {
+                recommendations.push('<li>Avec ' + variants + ' variantes, les p-values sont ajustées pour éviter les faux positifs multiples.</li>');
+            }
+
+            recommendations.push('<li>Évitez de lancer le test pendant des périodes exceptionnelles (soldes, fêtes, événements).</li>');
+
+            document.getElementById('sim-recommendations').innerHTML = recommendations.join('');
+        }
+
         // Initialize
         document.addEventListener('DOMContentLoaded', () => {
             loadFromURL();
             calculateResults();
+            calculateSampleSize();
 
             // Auto-calculate on input change
             const inputs = document.querySelectorAll('input, select');
