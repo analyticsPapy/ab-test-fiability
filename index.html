@@ -7,8 +7,9 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         :root {
-            --primary: #3b82f6;
-            --primary-dark: #2563eb;
+            --primary: #22c55e;
+            --primary-dark: #16a34a;
+            --primary-light: #4ade80;
             --success: #22c55e;
             --success-bg: #dcfce7;
             --success-border: #86efac;
@@ -27,6 +28,8 @@
             --gray-700: #374151;
             --gray-800: #1f2937;
             --gray-900: #111827;
+            --variant-a: #f59e0b;
+            --variant-b: #0ea5e9;
         }
 
         * {
@@ -157,7 +160,7 @@
         .input-field:focus {
             outline: none;
             border-color: var(--primary);
-            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+            box-shadow: 0 0 0 3px rgba(34, 197, 94, 0.15);
         }
 
         .btn {
@@ -330,11 +333,11 @@
         }
 
         .rate-bar-fill.variant-a {
-            background: linear-gradient(90deg, #fbbf24 0%, #f59e0b 100%);
+            background: linear-gradient(90deg, #fcd34d 0%, #f59e0b 100%);
         }
 
         .rate-bar-fill.variant-b {
-            background: linear-gradient(90deg, #60a5fa 0%, #3b82f6 100%);
+            background: linear-gradient(90deg, #38bdf8 0%, #0ea5e9 100%);
         }
 
         .rate-bar-value {
@@ -461,7 +464,7 @@
 
         .power-bar-fill {
             height: 100%;
-            background: linear-gradient(90deg, var(--primary) 0%, #8b5cf6 100%);
+            background: linear-gradient(90deg, var(--primary-light) 0%, var(--primary-dark) 100%);
             border-radius: 6px;
             transition: width 0.5s ease;
         }
@@ -565,9 +568,27 @@
         <aside class="sidebar">
             <div class="logo">
                 <div class="logo-icon">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <path d="M3 3v18h18" stroke="white"/>
-                        <path d="M7 16l4-8 4 6 5-10" stroke="white"/>
+                    <svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="1.5">
+                        <!-- Arbre de décision -->
+                        <!-- Noeud racine -->
+                        <circle cx="12" cy="4" r="2.5" fill="white" stroke="white"/>
+                        <!-- Branches principales -->
+                        <line x1="12" y1="6.5" x2="12" y2="9"/>
+                        <line x1="12" y1="9" x2="6" y2="12"/>
+                        <line x1="12" y1="9" x2="18" y2="12"/>
+                        <!-- Noeuds intermédiaires -->
+                        <circle cx="6" cy="13" r="2" fill="white" stroke="white"/>
+                        <circle cx="18" cy="13" r="2" fill="white" stroke="white"/>
+                        <!-- Branches finales -->
+                        <line x1="6" y1="15" x2="3" y2="19"/>
+                        <line x1="6" y1="15" x2="9" y2="19"/>
+                        <line x1="18" y1="15" x2="15" y2="19"/>
+                        <line x1="18" y1="15" x2="21" y2="19"/>
+                        <!-- Feuilles (résultats) -->
+                        <rect x="1.5" y="19" width="3" height="2" rx="0.5" fill="white"/>
+                        <rect x="7.5" y="19" width="3" height="2" rx="0.5" fill="white"/>
+                        <rect x="13.5" y="19" width="3" height="2" rx="0.5" fill="white"/>
+                        <rect x="19.5" y="19" width="3" height="2" rx="0.5" fill="white"/>
                     </svg>
                 </div>
                 <div class="logo-text"><span>AB</span> Testguide</div>
@@ -589,12 +610,19 @@
                 </label>
             </div>
 
+            <div class="input-group" style="margin-top: 12px;">
+                <label class="radio-label">
+                    <input type="checkbox" id="multi-variant-mode" onchange="toggleMultiVariant()">
+                    Mode multi-variantes (A/B/C/D...)
+                </label>
+            </div>
+
             <div id="evaluation-inputs">
                 <div class="section-title">Données du test</div>
                 <div class="input-group">
                     <div class="input-row">
                         <div>
-                            <label class="input-label">Visiteurs A</label>
+                            <label class="input-label">Visiteurs A (contrôle)</label>
                             <input type="number" class="input-field" id="visitors-a" value="80000" min="1">
                         </div>
                         <div>
@@ -613,6 +641,42 @@
                             <label class="input-label">Conversions B</label>
                             <input type="number" class="input-field" id="conversions-b" value="1696" min="0">
                         </div>
+                    </div>
+                </div>
+
+                <!-- Variantes supplémentaires (multi-variant) -->
+                <div id="extra-variants" style="display: none;">
+                    <div class="input-group variant-c">
+                        <div class="input-row">
+                            <div>
+                                <label class="input-label">Visiteurs C</label>
+                                <input type="number" class="input-field" id="visitors-c" value="80000" min="1">
+                            </div>
+                            <div>
+                                <label class="input-label">Conversions C</label>
+                                <input type="number" class="input-field" id="conversions-c" value="1750" min="0">
+                            </div>
+                        </div>
+                    </div>
+                    <div class="input-group variant-d">
+                        <div class="input-row">
+                            <div>
+                                <label class="input-label">Visiteurs D</label>
+                                <input type="number" class="input-field" id="visitors-d" value="80000" min="1">
+                            </div>
+                            <div>
+                                <label class="input-label">Conversions D</label>
+                                <input type="number" class="input-field" id="conversions-d" value="1520" min="0">
+                            </div>
+                        </div>
+                    </div>
+                    <div class="input-group">
+                        <label class="input-label">Correction multi-tests</label>
+                        <select class="select-field" id="correction-method">
+                            <option value="holm" selected>Holm (recommandé)</option>
+                            <option value="bonferroni">Bonferroni</option>
+                            <option value="none">Aucune</option>
+                        </select>
                     </div>
                 </div>
             </div>
@@ -933,7 +997,7 @@
                             label: 'A (Contrôle)',
                             data: normalizedA,
                             borderColor: '#f59e0b',
-                            backgroundColor: 'rgba(245, 158, 11, 0.2)',
+                            backgroundColor: 'rgba(245, 158, 11, 0.15)',
                             fill: true,
                             tension: 0.4,
                             pointRadius: 0
@@ -941,8 +1005,8 @@
                         {
                             label: 'B (Variante)',
                             data: normalizedB,
-                            borderColor: '#3b82f6',
-                            backgroundColor: 'rgba(59, 130, 246, 0.2)',
+                            borderColor: '#0ea5e9',
+                            backgroundColor: 'rgba(14, 165, 233, 0.15)',
                             fill: true,
                             tension: 0.4,
                             pointRadius: 0
@@ -1017,14 +1081,123 @@
                 }
             }
 
-            // Calculate
-            const results = calculateABTest(nA, xA, nB, xB, alpha, alternative);
+            // Vérifier le mode multi-variant
+            const isMultiVariant = document.getElementById('multi-variant-mode').checked;
 
-            // Update UI
-            updateUI(results, alpha);
+            if (isMultiVariant) {
+                // Mode multi-variant
+                const nC = parseInt(document.getElementById('visitors-c').value) || 1;
+                const xC = parseInt(document.getElementById('conversions-c').value) || 0;
+                const nD = parseInt(document.getElementById('visitors-d').value) || 1;
+                const xD = parseInt(document.getElementById('conversions-d').value) || 0;
 
-            // Create distribution chart
-            createDistributionChart(results.pA, results.seA, results.pB, results.seB);
+                const variants = [
+                    { name: 'A', n: nA, x: xA },
+                    { name: 'B', n: nB, x: xB },
+                    { name: 'C', n: nC, x: xC },
+                    { name: 'D', n: nD, x: xD }
+                ];
+
+                const multiResults = calculateMultiVariant(variants, alpha, alternative);
+                updateMultiVariantUI(multiResults, alpha);
+
+                // Créer le graphique avec toutes les distributions
+                createMultiDistributionChart(multiResults);
+            } else {
+                // Mode standard A/B
+                const results = calculateABTest(nA, xA, nB, xB, alpha, alternative);
+                updateUI(results, alpha);
+                createDistributionChart(results.pA, results.seA, results.pB, results.seB);
+            }
+        }
+
+        function createMultiDistributionChart(multiResults) {
+            const ctx = document.getElementById('distributionChart').getContext('2d');
+
+            // Collecter toutes les variantes avec leurs stats
+            const allVariants = [
+                { name: 'A (contrôle)', rate: multiResults.control.rate, n: multiResults.control.n, color: '#f59e0b', bgColor: 'rgba(245, 158, 11, 0.15)' },
+                ...multiResults.variants.map((v, i) => ({
+                    name: v.name,
+                    rate: v.rate,
+                    n: v.n,
+                    color: ['#0ea5e9', '#8b5cf6', '#ec4899'][i] || '#6b7280',
+                    bgColor: ['rgba(14, 165, 233, 0.15)', 'rgba(139, 92, 246, 0.15)', 'rgba(236, 72, 153, 0.15)'][i] || 'rgba(107, 114, 128, 0.15)'
+                }))
+            ];
+
+            // Calculer les écarts-types
+            allVariants.forEach(v => {
+                v.se = Math.sqrt(v.rate * (1 - v.rate) / v.n);
+            });
+
+            // Déterminer l'étendue du graphique
+            const minX = Math.min(...allVariants.map(v => v.rate)) - 4 * Math.max(...allVariants.map(v => v.se));
+            const maxX = Math.max(...allVariants.map(v => v.rate)) + 4 * Math.max(...allVariants.map(v => v.se));
+            const step = (maxX - minX) / 200;
+
+            const labels = [];
+            for (let x = minX; x <= maxX; x += step) {
+                labels.push((x * 100).toFixed(2) + '%');
+            }
+
+            // Générer les datasets
+            const datasets = allVariants.map(v => {
+                const data = [];
+                for (let x = minX; x <= maxX; x += step) {
+                    data.push(normalPDF(x, v.rate, v.se));
+                }
+                const maxY = Math.max(...data);
+                const normalized = data.map(y => y / maxY * 1000);
+                return {
+                    label: v.name,
+                    data: normalized,
+                    borderColor: v.color,
+                    backgroundColor: v.bgColor,
+                    fill: true,
+                    tension: 0.4,
+                    pointRadius: 0
+                };
+            });
+
+            if (distributionChart) {
+                distributionChart.destroy();
+            }
+
+            distributionChart = new Chart(ctx, {
+                type: 'line',
+                data: { labels, datasets },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    interaction: { intersect: false, mode: 'index' },
+                    plugins: {
+                        legend: {
+                            position: 'top',
+                            labels: { usePointStyle: true, padding: 20 }
+                        },
+                        tooltip: { enabled: true }
+                    },
+                    scales: {
+                        x: {
+                            display: true,
+                            title: { display: true, text: 'Taux de conversion' },
+                            ticks: {
+                                maxTicksLimit: 10,
+                                callback: function(value, index) {
+                                    if (index % 20 === 0) return this.getLabelForValue(value);
+                                    return '';
+                                }
+                            }
+                        },
+                        y: {
+                            display: true,
+                            title: { display: true, text: 'Densité' },
+                            ticks: { display: false }
+                        }
+                    }
+                }
+            });
         }
 
         function updateUI(results, alpha) {
@@ -1101,6 +1274,165 @@
             // Could toggle between evaluation and planning views
             // For now, just recalculate
             calculateResults();
+        }
+
+        function toggleMultiVariant() {
+            const isMulti = document.getElementById('multi-variant-mode').checked;
+            document.getElementById('extra-variants').style.display = isMulti ? 'block' : 'none';
+            calculateResults();
+        }
+
+        // Correction multi-tests (Holm, Bonferroni)
+        function pAdjust(pvals, method) {
+            const m = pvals.length;
+            if (m === 0) return pvals;
+            if (method === 'none') return [...pvals];
+
+            if (method === 'bonferroni') {
+                return pvals.map(p => Math.min(1, p * m));
+            }
+
+            if (method === 'holm') {
+                // Créer des indices triés par p-value croissante
+                const indexed = pvals.map((p, i) => ({ p, i }));
+                indexed.sort((a, b) => a.p - b.p);
+
+                const adj = new Array(m);
+                let runningMax = 0;
+                for (let j = 0; j < m; j++) {
+                    const adjusted = (m - j) * indexed[j].p;
+                    runningMax = Math.max(runningMax, adjusted);
+                    adj[indexed[j].i] = Math.min(1, runningMax);
+                }
+                return adj;
+            }
+
+            return [...pvals];
+        }
+
+        // Calcul multi-variant
+        function calculateMultiVariant(variants, alpha, alternative) {
+            // variants = [{name, n, x}, ...]
+            // Le premier est le contrôle (A)
+            const control = variants[0];
+            const pControl = control.x / control.n;
+
+            const results = [];
+            const rawPvals = [];
+
+            // Comparer chaque variante au contrôle
+            for (let i = 1; i < variants.length; i++) {
+                const v = variants[i];
+                const test = calculateABTest(control.n, control.x, v.n, v.x, alpha, alternative);
+                results.push({
+                    name: v.name,
+                    n: v.n,
+                    x: v.x,
+                    rate: test.pB,
+                    diff: test.diff,
+                    lift: test.lift,
+                    pValue: test.pValue,
+                    z: test.z,
+                    ciLow: test.ciLow,
+                    ciHigh: test.ciHigh,
+                    power: test.power
+                });
+                rawPvals.push(test.pValue);
+            }
+
+            // Appliquer la correction multi-tests
+            const method = document.getElementById('correction-method').value;
+            const adjustedPvals = pAdjust(rawPvals, method);
+
+            // Mettre à jour les résultats avec les p-values ajustées
+            for (let i = 0; i < results.length; i++) {
+                results[i].pAdjusted = adjustedPvals[i];
+                results[i].significant = adjustedPvals[i] < alpha;
+            }
+
+            return {
+                control: { name: control.name, n: control.n, x: control.x, rate: pControl },
+                variants: results,
+                method: method
+            };
+        }
+
+        function updateMultiVariantUI(multiResults, alpha) {
+            const banner = document.getElementById('result-banner');
+            const title = document.getElementById('result-title');
+            const desc = document.getElementById('result-description');
+
+            // Trouver le meilleur variant significatif
+            const significantVariants = multiResults.variants.filter(v => v.significant && v.diff > 0);
+            const bestVariant = significantVariants.length > 0
+                ? significantVariants.reduce((a, b) => a.lift > b.lift ? a : b)
+                : null;
+
+            if (bestVariant) {
+                banner.className = 'result-banner significant';
+                title.innerHTML = `<em>Gagnant</em> : Variante ${bestVariant.name}`;
+                desc.textContent = `La variante ${bestVariant.name} surpasse le contrôle avec un uplift de ${(bestVariant.lift * 100).toFixed(2)}%. p-value ajustée = ${bestVariant.pAdjusted.toFixed(4)} (correction ${multiResults.method}).`;
+            } else {
+                banner.className = 'result-banner not-significant';
+                title.innerHTML = 'Aucun gagnant significatif';
+                const leader = multiResults.variants.reduce((a, b) => a.lift > b.lift ? a : b);
+                desc.textContent = `Aucune variante ne surpasse significativement le contrôle. Meilleur candidat : ${leader.name} avec +${(leader.lift * 100).toFixed(2)}% (p ajustée = ${leader.pAdjusted.toFixed(4)}).`;
+            }
+
+            // Mettre à jour les barres de taux
+            const allRates = [multiResults.control.rate, ...multiResults.variants.map(v => v.rate)];
+            const maxRate = Math.max(...allRates);
+            const barScale = 0.9 / maxRate;
+
+            document.getElementById('bar-a').style.width = (multiResults.control.rate * barScale * 100) + '%';
+            document.getElementById('rate-a-display').textContent = (multiResults.control.rate * 100).toFixed(2) + '%';
+
+            // Mettre à jour la barre B avec le meilleur variant
+            const bestOrFirst = bestVariant || multiResults.variants[0];
+            document.getElementById('bar-b').style.width = (bestOrFirst.rate * barScale * 100) + '%';
+            document.getElementById('rate-b-display').textContent = (bestOrFirst.rate * 100).toFixed(2) + '% (' + bestOrFirst.name + ')';
+
+            // Stats cards
+            document.getElementById('stat-rate-a').textContent = (multiResults.control.rate * 100).toFixed(2) + '%';
+            document.getElementById('stat-rate-b').textContent = (bestOrFirst.rate * 100).toFixed(2) + '% (' + bestOrFirst.name + ')';
+            document.getElementById('stat-lift').textContent = (bestOrFirst.lift >= 0 ? '+' : '') + (bestOrFirst.lift * 100).toFixed(2) + '%';
+
+            // Detail stats
+            document.getElementById('stat-power').textContent = (bestOrFirst.power * 100).toFixed(1) + '%';
+            document.getElementById('stat-pvalue').textContent = bestOrFirst.pAdjusted.toFixed(4) + ' (ajustée)';
+            document.getElementById('stat-zscore').textContent = bestOrFirst.z.toFixed(2);
+            document.getElementById('alpha-display').textContent = alpha.toFixed(2);
+
+            // Power bar
+            document.getElementById('power-bar-fill').style.width = (bestOrFirst.power * 100) + '%';
+            const powerStatus = bestOrFirst.power >= 0.8 ? '(suffisant)' : '(recommandé: 80%)';
+            document.getElementById('power-display').textContent = (bestOrFirst.power * 100).toFixed(1) + '% ' + powerStatus;
+
+            // CI
+            const ciLowPct = (bestOrFirst.ciLow * 100).toFixed(2);
+            const ciHighPct = (bestOrFirst.ciHigh * 100).toFixed(2);
+            document.getElementById('ci-display').textContent = `[${ciLowPct}%, ${ciHighPct}%] (${bestOrFirst.name} vs A)`;
+            document.getElementById('ci-low-label').textContent = ciLowPct + '%';
+            document.getElementById('ci-high-label').textContent = ciHighPct + '%';
+
+            // CI visualization
+            const ciRange = document.getElementById('ci-range');
+            const ciPoint = document.getElementById('ci-point');
+            const ciZero = document.getElementById('ci-zero');
+
+            const ciMin = Math.min(bestOrFirst.ciLow, -Math.abs(bestOrFirst.ciLow) * 0.5);
+            const ciMax = Math.max(bestOrFirst.ciHigh, Math.abs(bestOrFirst.ciHigh) * 0.5);
+            const ciScale = ciMax - ciMin;
+
+            const lowPos = ((bestOrFirst.ciLow - ciMin) / ciScale) * 100;
+            const highPos = ((bestOrFirst.ciHigh - ciMin) / ciScale) * 100;
+            const pointPos = ((bestOrFirst.diff - ciMin) / ciScale) * 100;
+            const zeroPos = ((0 - ciMin) / ciScale) * 100;
+
+            ciRange.style.left = lowPos + '%';
+            ciRange.style.width = (highPos - lowPos) + '%';
+            ciPoint.style.left = pointPos + '%';
+            ciZero.style.left = zeroPos + '%';
         }
 
         function shareResults() {
