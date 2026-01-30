@@ -714,6 +714,17 @@
                     </select>
                 </div>
 
+                <div class="input-group">
+                    <label class="input-label">Répartition attendue (% vers B)</label>
+                    <select class="select-field" id="expected-ratio">
+                        <option value="0.50" selected>50% / 50%</option>
+                        <option value="0.25">75% / 25%</option>
+                        <option value="0.33">67% / 33%</option>
+                        <option value="0.20">80% / 20%</option>
+                        <option value="0.10">90% / 10%</option>
+                    </select>
+                </div>
+
                 <div class="section-title" style="margin-top: 20px;">Durée & Monitoring</div>
 
                 <div class="input-group">
@@ -778,6 +789,38 @@
                             <div class="rate-bar-fill variant-b" id="bar-b" style="width: 92%"></div>
                         </div>
                         <span class="rate-bar-value" id="rate-b-display">2.12%</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- SRM Alert -->
+            <div class="srm-alert" id="srm-alert" style="display: none; padding: 16px 20px; border-radius: 12px; margin-bottom: 24px; background: linear-gradient(135deg, #fef2f2 0%, #fee2e2 100%); border-left: 4px solid #ef4444;">
+                <div style="display: flex; align-items: flex-start; gap: 12px;">
+                    <div style="font-size: 24px;">⚠️</div>
+                    <div>
+                        <h4 style="color: #991b1b; font-size: 16px; font-weight: 600; margin-bottom: 6px;">Alerte SRM (Sample Ratio Mismatch)</h4>
+                        <p style="color: #b91c1c; font-size: 14px; line-height: 1.5; margin-bottom: 8px;" id="srm-message">
+                            La répartition observée ne correspond pas à la répartition attendue.
+                        </p>
+                        <div style="background: white; padding: 10px 14px; border-radius: 8px; font-size: 13px;">
+                            <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; text-align: center;">
+                                <div>
+                                    <div style="color: #6b7280; font-size: 11px;">Attendue</div>
+                                    <div style="font-weight: 600; color: #374151;" id="srm-expected">50% / 50%</div>
+                                </div>
+                                <div>
+                                    <div style="color: #6b7280; font-size: 11px;">Observée</div>
+                                    <div style="font-weight: 600; color: #991b1b;" id="srm-observed">60% / 40%</div>
+                                </div>
+                                <div>
+                                    <div style="color: #6b7280; font-size: 11px;">p-value SRM</div>
+                                    <div style="font-weight: 600; color: #991b1b;" id="srm-pvalue">0.0001</div>
+                                </div>
+                            </div>
+                        </div>
+                        <p style="color: #7f1d1d; font-size: 12px; margin-top: 10px; font-style: italic;">
+                            <strong>Ce résultat n'est pas fiable.</strong> Vérifiez l'implémentation de votre test (randomisation, cookies, redirections, filtres analytics).
+                        </p>
                     </div>
                 </div>
             </div>
@@ -1141,6 +1184,9 @@
             // Analyser la durée et le peeking
             const durationAnalysis = analyzeDuration();
 
+            // Vérifier le SRM (Sample Ratio Mismatch)
+            updateSRMAlert(nA, nB);
+
             // Vérifier le mode multi-variant
             const isMultiVariant = document.getElementById('multi-variant-mode').checked;
 
@@ -1464,6 +1510,62 @@
                 : '<span style="color: var(--success);">✓ Configuration optimale pour un test fiable.</span>';
 
             return { duration, cycles, peeks, method };
+        }
+
+        // Calcul du Sample Ratio Mismatch (SRM)
+        function calculateSRM(nA, nB, expectedRatioB) {
+            const total = nA + nB;
+            const expectedA = total * (1 - expectedRatioB);
+            const expectedB = total * expectedRatioB;
+            const observedA = nA;
+            const observedB = nB;
+
+            // Test Chi-carré
+            const chiSquare = Math.pow(observedA - expectedA, 2) / expectedA +
+                              Math.pow(observedB - expectedB, 2) / expectedB;
+
+            // P-value (distribution chi-carré avec 1 degré de liberté)
+            // Approximation: 1 - normalCDF(sqrt(chiSquare))  pour df=1
+            const pValue = 2 * (1 - normalCDF(Math.sqrt(chiSquare)));
+
+            const observedRatioA = (observedA / total * 100).toFixed(1);
+            const observedRatioB = (observedB / total * 100).toFixed(1);
+            const expectedRatioA = ((1 - expectedRatioB) * 100).toFixed(0);
+            const expectedRatioBDisplay = (expectedRatioB * 100).toFixed(0);
+
+            return {
+                chiSquare,
+                pValue,
+                hasSRM: pValue < 0.01, // Seuil strict pour SRM
+                observedRatioA,
+                observedRatioB,
+                expectedRatioA,
+                expectedRatioB: expectedRatioBDisplay,
+                deviation: Math.abs((observedB / total) - expectedRatioB) * 100
+            };
+        }
+
+        function updateSRMAlert(nA, nB) {
+            const expectedRatioB = parseFloat(document.getElementById('expected-ratio').value);
+            const srm = calculateSRM(nA, nB, expectedRatioB);
+
+            const alertEl = document.getElementById('srm-alert');
+            const messageEl = document.getElementById('srm-message');
+            const expectedEl = document.getElementById('srm-expected');
+            const observedEl = document.getElementById('srm-observed');
+            const pvalueEl = document.getElementById('srm-pvalue');
+
+            if (srm.hasSRM) {
+                alertEl.style.display = 'block';
+                messageEl.textContent = `La répartition observée (${srm.observedRatioA}% / ${srm.observedRatioB}%) diffère significativement de la répartition attendue (${srm.expectedRatioA}% / ${srm.expectedRatioB}%).`;
+                expectedEl.textContent = `${srm.expectedRatioA}% / ${srm.expectedRatioB}%`;
+                observedEl.textContent = `${srm.observedRatioA}% / ${srm.observedRatioB}%`;
+                pvalueEl.textContent = srm.pValue < 0.0001 ? '< 0.0001' : srm.pValue.toFixed(4);
+            } else {
+                alertEl.style.display = 'none';
+            }
+
+            return srm;
         }
 
         // Calcul multi-variant
