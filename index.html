@@ -713,6 +713,49 @@
                         <option value="0.99">99%</option>
                     </select>
                 </div>
+
+                <div class="input-group">
+                    <label class="input-label">Répartition attendue (% vers B)</label>
+                    <select class="select-field" id="expected-ratio">
+                        <option value="0.50" selected>50% / 50%</option>
+                        <option value="0.25">75% / 25%</option>
+                        <option value="0.33">67% / 33%</option>
+                        <option value="0.20">80% / 20%</option>
+                        <option value="0.10">90% / 10%</option>
+                    </select>
+                </div>
+
+                <div class="section-title" style="margin-top: 20px;">Durée & Monitoring</div>
+
+                <div class="input-group">
+                    <label class="input-label">Durée du test (jours)</label>
+                    <input type="number" class="input-field" id="test-duration" value="14" min="1" max="365">
+                </div>
+
+                <div class="input-group">
+                    <label class="input-label">Fréquence d'analyse</label>
+                    <select class="select-field" id="analysis-frequency">
+                        <option value="unique">Analyse unique (pas de peeking)</option>
+                        <option value="daily" selected>Quotidienne</option>
+                        <option value="weekly">Hebdomadaire</option>
+                    </select>
+                </div>
+
+                <div class="input-group">
+                    <label class="input-label">Méthode d'ajustement peeking</label>
+                    <select class="select-field" id="peeking-method">
+                        <option value="sidak" selected>Sidak (recommandé)</option>
+                        <option value="bonferroni">Bonferroni</option>
+                        <option value="none">Aucun</option>
+                    </select>
+                </div>
+
+                <div class="input-group" style="background: var(--gray-100); padding: 10px; border-radius: 8px; margin-top: 8px;">
+                    <div style="font-size: 12px; color: var(--gray-600);">
+                        <strong>Nombre de peeks :</strong> <span id="peek-count">14</span><br>
+                        <span style="font-size: 11px; color: var(--gray-500);">Plus on regarde souvent, plus on risque des faux positifs. L'ajustement corrige ce biais.</span>
+                    </div>
+                </div>
             </div>
         </aside>
 
@@ -750,6 +793,38 @@
                 </div>
             </div>
 
+            <!-- SRM Alert -->
+            <div class="srm-alert" id="srm-alert" style="display: none; padding: 16px 20px; border-radius: 12px; margin-bottom: 24px; background: linear-gradient(135deg, #fef2f2 0%, #fee2e2 100%); border-left: 4px solid #ef4444;">
+                <div style="display: flex; align-items: flex-start; gap: 12px;">
+                    <div style="font-size: 24px;">⚠️</div>
+                    <div>
+                        <h4 style="color: #991b1b; font-size: 16px; font-weight: 600; margin-bottom: 6px;">Alerte SRM (Sample Ratio Mismatch)</h4>
+                        <p style="color: #b91c1c; font-size: 14px; line-height: 1.5; margin-bottom: 8px;" id="srm-message">
+                            La répartition observée ne correspond pas à la répartition attendue.
+                        </p>
+                        <div style="background: white; padding: 10px 14px; border-radius: 8px; font-size: 13px;">
+                            <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; text-align: center;">
+                                <div>
+                                    <div style="color: #6b7280; font-size: 11px;">Attendue</div>
+                                    <div style="font-weight: 600; color: #374151;" id="srm-expected">50% / 50%</div>
+                                </div>
+                                <div>
+                                    <div style="color: #6b7280; font-size: 11px;">Observée</div>
+                                    <div style="font-weight: 600; color: #991b1b;" id="srm-observed">60% / 40%</div>
+                                </div>
+                                <div>
+                                    <div style="color: #6b7280; font-size: 11px;">p-value SRM</div>
+                                    <div style="font-weight: 600; color: #991b1b;" id="srm-pvalue">0.0001</div>
+                                </div>
+                            </div>
+                        </div>
+                        <p style="color: #7f1d1d; font-size: 12px; margin-top: 10px; font-style: italic;">
+                            <strong>Ce résultat n'est pas fiable.</strong> Vérifiez l'implémentation de votre test (randomisation, cookies, redirections, filtres analytics).
+                        </p>
+                    </div>
+                </div>
+            </div>
+
             <!-- Distribution chart -->
             <div class="chart-section">
                 <h3 class="chart-title">Distribution attendue des taux de conversion A et B</h3>
@@ -778,15 +853,20 @@
             </div>
 
             <!-- Detail stats -->
-            <div class="detail-stats">
+            <div class="detail-stats" style="grid-template-columns: repeat(4, 1fr);">
+                <div class="detail-stat">
+                    <div class="detail-stat-label">p-valeur brute</div>
+                    <div class="detail-stat-value" id="stat-pvalue">0.1824</div>
+                    <div class="detail-stat-desc">Sans ajustement</div>
+                </div>
+                <div class="detail-stat" id="peeking-stat" style="background: linear-gradient(135deg, var(--gray-50) 0%, #ecfdf5 100%);">
+                    <div class="detail-stat-label">p-valeur ajustée</div>
+                    <div class="detail-stat-value" id="stat-pvalue-adjusted" style="color: var(--primary-dark);">0.1824</div>
+                    <div class="detail-stat-desc" id="peeking-desc">Après peeking (<span id="peek-method-display">sidak</span>)</div>
+                </div>
                 <div class="detail-stat">
                     <div class="detail-stat-label">Puissance observée</div>
                     <div class="detail-stat-value" id="stat-power">34.2%</div>
-                    <div class="detail-stat-desc">Probabilité de détecter cet effet</div>
-                </div>
-                <div class="detail-stat">
-                    <div class="detail-stat-label">p-valeur</div>
-                    <div class="detail-stat-value" id="stat-pvalue">0.1824</div>
                     <div class="detail-stat-desc">Seuil: <span id="alpha-display">0.05</span></div>
                 </div>
                 <div class="detail-stat">
@@ -794,6 +874,26 @@
                     <div class="detail-stat-value" id="stat-zscore">1.33</div>
                     <div class="detail-stat-desc">Statistique de test</div>
                 </div>
+            </div>
+
+            <!-- Durée et recommandations -->
+            <div class="chart-section" style="margin-top: 24px; background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%);">
+                <h3 class="chart-title" style="color: var(--primary-dark);">Analyse de la durée du test</h3>
+                <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px;">
+                    <div style="text-align: center;">
+                        <div style="font-size: 24px; font-weight: 600; color: var(--primary-dark);" id="duration-display">14 jours</div>
+                        <div style="font-size: 12px; color: var(--gray-600);">Durée configurée</div>
+                    </div>
+                    <div style="text-align: center;">
+                        <div style="font-size: 24px; font-weight: 600; color: var(--gray-700);" id="cycles-display">2 cycles</div>
+                        <div style="font-size: 12px; color: var(--gray-600);">Cycles hebdomadaires</div>
+                    </div>
+                    <div style="text-align: center;">
+                        <div style="font-size: 24px; font-weight: 600;" id="duration-status" style="color: var(--success);">OK</div>
+                        <div style="font-size: 12px; color: var(--gray-600);" id="duration-advice">Durée suffisante</div>
+                    </div>
+                </div>
+                <div style="margin-top: 16px; padding: 12px; background: white; border-radius: 8px; font-size: 13px; color: var(--gray-600);" id="duration-warning"></div>
             </div>
 
             <!-- Power section -->
@@ -1081,6 +1181,12 @@
                 }
             }
 
+            // Analyser la durée et le peeking
+            const durationAnalysis = analyzeDuration();
+
+            // Vérifier le SRM (Sample Ratio Mismatch)
+            updateSRMAlert(nA, nB);
+
             // Vérifier le mode multi-variant
             const isMultiVariant = document.getElementById('multi-variant-mode').checked;
 
@@ -1099,14 +1205,22 @@
                 ];
 
                 const multiResults = calculateMultiVariant(variants, alpha, alternative);
-                updateMultiVariantUI(multiResults, alpha);
+                // Appliquer aussi l'ajustement peeking sur les p-values multi-variant
+                multiResults.variants.forEach(v => {
+                    v.pAdjustedPeeking = adjustPeekingPValue(v.pAdjusted, durationAnalysis.peeks, durationAnalysis.method);
+                    v.significantFinal = v.pAdjustedPeeking < alpha;
+                });
+                updateMultiVariantUI(multiResults, alpha, durationAnalysis);
 
                 // Créer le graphique avec toutes les distributions
                 createMultiDistributionChart(multiResults);
             } else {
                 // Mode standard A/B
                 const results = calculateABTest(nA, xA, nB, xB, alpha, alternative);
-                updateUI(results, alpha);
+                // Ajuster la p-value pour le peeking
+                results.pValueAdjusted = adjustPeekingPValue(results.pValue, durationAnalysis.peeks, durationAnalysis.method);
+                results.significantFinal = results.pValueAdjusted < alpha;
+                updateUI(results, alpha, durationAnalysis);
                 createDistributionChart(results.pA, results.seA, results.pB, results.seB);
             }
         }
@@ -1200,21 +1314,24 @@
             });
         }
 
-        function updateUI(results, alpha) {
-            // Result banner
+        function updateUI(results, alpha, durationAnalysis) {
+            // Result banner - utilise significantFinal qui tient compte du peeking
             const banner = document.getElementById('result-banner');
             const title = document.getElementById('result-title');
             const desc = document.getElementById('result-description');
 
-            if (results.significant) {
+            const isSignificant = results.significantFinal !== undefined ? results.significantFinal : results.significant;
+            const pValueDisplay = results.pValueAdjusted !== undefined ? results.pValueAdjusted : results.pValue;
+
+            if (isSignificant) {
                 banner.className = 'result-banner significant';
                 title.innerHTML = 'Le résultat est <em>significatif</em> !';
                 const winner = results.pB > results.pA ? 'B' : 'A';
-                desc.textContent = `La variante ${winner} surpasse ${winner === 'B' ? 'A' : 'B'} avec un uplift de ${(results.lift * 100).toFixed(2)}%. La différence est statistiquement significative (p = ${results.pValue.toFixed(4)}).`;
+                desc.textContent = `La variante ${winner} surpasse ${winner === 'B' ? 'A' : 'B'} avec un uplift de ${(results.lift * 100).toFixed(2)}%. Différence significative (p ajustée = ${pValueDisplay.toFixed(4)}).`;
             } else {
                 banner.className = 'result-banner not-significant';
                 title.innerHTML = 'Le résultat n\'est <em>pas</em> significatif.';
-                desc.textContent = `La différence observée (${(results.lift * 100).toFixed(2)}%) n'est pas suffisante pour déclarer un vainqueur. Il n'y a pas de différence réelle de performance entre A et B, ou il faut collecter plus de données.`;
+                desc.textContent = `La différence observée (${(results.lift * 100).toFixed(2)}%) n'est pas suffisante pour déclarer un vainqueur (p ajustée = ${pValueDisplay.toFixed(4)}). Collectez plus de données ou prolongez le test.`;
             }
 
             // Rate bars
@@ -1231,9 +1348,10 @@
             document.getElementById('stat-rate-b').textContent = (results.pB * 100).toFixed(2) + '%';
             document.getElementById('stat-lift').textContent = (results.lift >= 0 ? '+' : '') + (results.lift * 100).toFixed(2) + '%';
 
-            // Detail stats
-            document.getElementById('stat-power').textContent = (results.power * 100).toFixed(1) + '%';
+            // Detail stats - p-value brute et ajustée
             document.getElementById('stat-pvalue').textContent = results.pValue.toFixed(4);
+            document.getElementById('stat-pvalue-adjusted').textContent = pValueDisplay.toFixed(4);
+            document.getElementById('stat-power').textContent = (results.power * 100).toFixed(1) + '%';
             document.getElementById('stat-zscore').textContent = results.z.toFixed(2);
             document.getElementById('alpha-display').textContent = alpha.toFixed(2);
 
@@ -1310,6 +1428,146 @@
             return [...pvals];
         }
 
+        // Calcul du nombre de peeks
+        function calculatePeeks() {
+            const duration = parseInt(document.getElementById('test-duration').value) || 14;
+            const frequency = document.getElementById('analysis-frequency').value;
+
+            let peeks = 1;
+            if (frequency === 'daily') {
+                peeks = duration;
+            } else if (frequency === 'weekly') {
+                peeks = Math.ceil(duration / 7);
+            }
+
+            document.getElementById('peek-count').textContent = peeks;
+            return peeks;
+        }
+
+        // Ajustement peeking de la p-value
+        function adjustPeekingPValue(pValue, peeks, method) {
+            if (method === 'none' || peeks <= 1) {
+                return pValue;
+            }
+
+            if (method === 'bonferroni') {
+                return Math.min(1, pValue * peeks);
+            }
+
+            if (method === 'sidak') {
+                // Sidak: 1 - (1 - p)^m
+                return Math.min(1, 1 - Math.pow(1 - pValue, peeks));
+            }
+
+            return pValue;
+        }
+
+        // Analyse de la durée du test
+        function analyzeDuration() {
+            const duration = parseInt(document.getElementById('test-duration').value) || 14;
+            const cycles = Math.floor(duration / 7);
+            const peeks = calculatePeeks();
+            const method = document.getElementById('peeking-method').value;
+
+            // Mise à jour de l'affichage
+            document.getElementById('duration-display').textContent = duration + ' jours';
+            document.getElementById('cycles-display').textContent = cycles + ' cycle' + (cycles > 1 ? 's' : '');
+            document.getElementById('peek-method-display').textContent = method;
+
+            const statusEl = document.getElementById('duration-status');
+            const adviceEl = document.getElementById('duration-advice');
+            const warningEl = document.getElementById('duration-warning');
+
+            let warnings = [];
+
+            // Vérifications
+            if (duration < 7) {
+                statusEl.textContent = '⚠️';
+                statusEl.style.color = '#eab308';
+                adviceEl.textContent = 'Trop court';
+                warnings.push('Le test dure moins d\'une semaine : vous ne couvrez pas un cycle hebdomadaire complet (comportement différent week-end/semaine).');
+            } else if (duration < 14) {
+                statusEl.textContent = '~';
+                statusEl.style.color = '#f59e0b';
+                adviceEl.textContent = 'Acceptable';
+                warnings.push('Idéalement, visez 2 semaines complètes pour couvrir 2 cycles hebdomadaires et réduire les biais temporels.');
+            } else {
+                statusEl.textContent = '✓';
+                statusEl.style.color = '#22c55e';
+                adviceEl.textContent = 'Durée suffisante';
+            }
+
+            if (peeks > 10) {
+                warnings.push('Vous regardez les résultats ' + peeks + ' fois. Cela augmente significativement le risque de faux positifs. L\'ajustement ' + method + ' corrige ce biais mais réduit la puissance du test.');
+            }
+
+            if (method === 'none' && peeks > 1) {
+                warnings.push('⚠️ Sans ajustement peeking, votre taux de faux positifs réel est plus élevé que α. Activez Sidak ou Bonferroni.');
+            }
+
+            warningEl.innerHTML = warnings.length > 0
+                ? '<strong>Recommandations :</strong><ul style="margin: 8px 0 0 16px;">' + warnings.map(w => '<li>' + w + '</li>').join('') + '</ul>'
+                : '<span style="color: var(--success);">✓ Configuration optimale pour un test fiable.</span>';
+
+            return { duration, cycles, peeks, method };
+        }
+
+        // Calcul du Sample Ratio Mismatch (SRM)
+        function calculateSRM(nA, nB, expectedRatioB) {
+            const total = nA + nB;
+            const expectedA = total * (1 - expectedRatioB);
+            const expectedB = total * expectedRatioB;
+            const observedA = nA;
+            const observedB = nB;
+
+            // Test Chi-carré
+            const chiSquare = Math.pow(observedA - expectedA, 2) / expectedA +
+                              Math.pow(observedB - expectedB, 2) / expectedB;
+
+            // P-value (distribution chi-carré avec 1 degré de liberté)
+            // Approximation: 1 - normalCDF(sqrt(chiSquare))  pour df=1
+            const pValue = 2 * (1 - normalCDF(Math.sqrt(chiSquare)));
+
+            const observedRatioA = (observedA / total * 100).toFixed(1);
+            const observedRatioB = (observedB / total * 100).toFixed(1);
+            const expectedRatioA = ((1 - expectedRatioB) * 100).toFixed(0);
+            const expectedRatioBDisplay = (expectedRatioB * 100).toFixed(0);
+
+            return {
+                chiSquare,
+                pValue,
+                hasSRM: pValue < 0.01, // Seuil strict pour SRM
+                observedRatioA,
+                observedRatioB,
+                expectedRatioA,
+                expectedRatioB: expectedRatioBDisplay,
+                deviation: Math.abs((observedB / total) - expectedRatioB) * 100
+            };
+        }
+
+        function updateSRMAlert(nA, nB) {
+            const expectedRatioB = parseFloat(document.getElementById('expected-ratio').value);
+            const srm = calculateSRM(nA, nB, expectedRatioB);
+
+            const alertEl = document.getElementById('srm-alert');
+            const messageEl = document.getElementById('srm-message');
+            const expectedEl = document.getElementById('srm-expected');
+            const observedEl = document.getElementById('srm-observed');
+            const pvalueEl = document.getElementById('srm-pvalue');
+
+            if (srm.hasSRM) {
+                alertEl.style.display = 'block';
+                messageEl.textContent = `La répartition observée (${srm.observedRatioA}% / ${srm.observedRatioB}%) diffère significativement de la répartition attendue (${srm.expectedRatioA}% / ${srm.expectedRatioB}%).`;
+                expectedEl.textContent = `${srm.expectedRatioA}% / ${srm.expectedRatioB}%`;
+                observedEl.textContent = `${srm.observedRatioA}% / ${srm.observedRatioB}%`;
+                pvalueEl.textContent = srm.pValue < 0.0001 ? '< 0.0001' : srm.pValue.toFixed(4);
+            } else {
+                alertEl.style.display = 'none';
+            }
+
+            return srm;
+        }
+
         // Calcul multi-variant
         function calculateMultiVariant(variants, alpha, alternative) {
             // variants = [{name, n, x}, ...]
@@ -1357,26 +1615,32 @@
             };
         }
 
-        function updateMultiVariantUI(multiResults, alpha) {
+        function updateMultiVariantUI(multiResults, alpha, durationAnalysis) {
             const banner = document.getElementById('result-banner');
             const title = document.getElementById('result-title');
             const desc = document.getElementById('result-description');
 
-            // Trouver le meilleur variant significatif
-            const significantVariants = multiResults.variants.filter(v => v.significant && v.diff > 0);
+            // Trouver le meilleur variant significatif (avec peeking si disponible)
+            const significantVariants = multiResults.variants.filter(v => {
+                const isSig = v.significantFinal !== undefined ? v.significantFinal : v.significant;
+                return isSig && v.diff > 0;
+            });
             const bestVariant = significantVariants.length > 0
                 ? significantVariants.reduce((a, b) => a.lift > b.lift ? a : b)
                 : null;
 
+            // P-value finale (avec peeking si disponible)
+            const getFinalP = (v) => v.pAdjustedPeeking !== undefined ? v.pAdjustedPeeking : v.pAdjusted;
+
             if (bestVariant) {
                 banner.className = 'result-banner significant';
                 title.innerHTML = `<em>Gagnant</em> : Variante ${bestVariant.name}`;
-                desc.textContent = `La variante ${bestVariant.name} surpasse le contrôle avec un uplift de ${(bestVariant.lift * 100).toFixed(2)}%. p-value ajustée = ${bestVariant.pAdjusted.toFixed(4)} (correction ${multiResults.method}).`;
+                desc.textContent = `La variante ${bestVariant.name} surpasse le contrôle avec un uplift de ${(bestVariant.lift * 100).toFixed(2)}%. p-value finale = ${getFinalP(bestVariant).toFixed(4)} (${multiResults.method} + peeking).`;
             } else {
                 banner.className = 'result-banner not-significant';
                 title.innerHTML = 'Aucun gagnant significatif';
                 const leader = multiResults.variants.reduce((a, b) => a.lift > b.lift ? a : b);
-                desc.textContent = `Aucune variante ne surpasse significativement le contrôle. Meilleur candidat : ${leader.name} avec +${(leader.lift * 100).toFixed(2)}% (p ajustée = ${leader.pAdjusted.toFixed(4)}).`;
+                desc.textContent = `Aucune variante ne surpasse significativement le contrôle. Meilleur candidat : ${leader.name} avec +${(leader.lift * 100).toFixed(2)}% (p finale = ${getFinalP(leader).toFixed(4)}).`;
             }
 
             // Mettre à jour les barres de taux
@@ -1397,9 +1661,10 @@
             document.getElementById('stat-rate-b').textContent = (bestOrFirst.rate * 100).toFixed(2) + '% (' + bestOrFirst.name + ')';
             document.getElementById('stat-lift').textContent = (bestOrFirst.lift >= 0 ? '+' : '') + (bestOrFirst.lift * 100).toFixed(2) + '%';
 
-            // Detail stats
+            // Detail stats - p-values brute, multi-tests et peeking
+            document.getElementById('stat-pvalue').textContent = bestOrFirst.pValue.toFixed(4);
+            document.getElementById('stat-pvalue-adjusted').textContent = getFinalP(bestOrFirst).toFixed(4);
             document.getElementById('stat-power').textContent = (bestOrFirst.power * 100).toFixed(1) + '%';
-            document.getElementById('stat-pvalue').textContent = bestOrFirst.pAdjusted.toFixed(4) + ' (ajustée)';
             document.getElementById('stat-zscore').textContent = bestOrFirst.z.toFixed(2);
             document.getElementById('alpha-display').textContent = alpha.toFixed(2);
 
